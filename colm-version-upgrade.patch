@@ -1,0 +1,11 @@
+diff -Nur ragel-7.0.0.12/configure ragel-7.0.0.12/configure
+--- ragel-7.0.0.12/configure    2020-06-23 14:53:40.193071700 +0800
++++ ragel-7.0.0.12/configure    2020-06-23 14:48:38.350420000 +0800
+@@ -2516,7 +2516,7 @@
+
+ PUBDATE="May 2019"
+
+-EXPECTED_COLM=0.13.0.7
++EXPECTED_COLM=0.14.1
+
+ am__api_version='1.15'

@@ -10,6 +10,8 @@ License:        MIT and LGPLv2+
 URL:            http://www.colm.net/open-source/%{name}/
 Source0:        https://www.colm.net/files/%{name}/%{name}-%{version}.tar.gz
 
+Patch0: colm-version-upgrade.patch
+
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  autoconf
