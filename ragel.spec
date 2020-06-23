@@ -20,7 +20,7 @@ BuildRequires:  make
 BuildRequires:  kelbt
 BuildRequires:  ragel
 %endif
-BuildRequires:  colm-devel = 0.13.0.7
+BuildRequires:  colm-devel
 
 # Unfortunately, upstream doesn't exist and not possible to find version
 Provides:       bundled(aapl)
