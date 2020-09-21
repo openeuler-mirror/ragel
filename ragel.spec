@@ -2,7 +2,7 @@
 
 Name:           ragel
 Version:        7.0.0.12
-Release:        1
+Release:        2
 Summary:        Finite state machine compiler
 
 # aapl/ is the LGPLv2+
@@ -24,6 +24,7 @@ BuildRequires:  colm-devel
 
 # Unfortunately, upstream doesn't exist and not possible to find version
 Provides:       bundled(aapl)
+Patch0000:      0001-Fix-ragel-d-ragel-go-ragel-java-such-command-segfault.patch
 
 %description
 Ragel compiles executable finite state machines from regular languages.
@@ -76,5 +77,8 @@ install -p -m 0644 -D %{name}.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax/%{
 %{_includedir}/%{name}/
 
 %changelog
+* Mon Sep 21 2020 Guoshuai Sun <sunguoshuai@huawei.com> - 7.0.0.12-2
+- Fix ragel-d ragel-go ragel-java eg. command segfault
+
 * Mon Jun 22 2020 Yikun Jiang <yikunkero@gmail.com> - 7.0.0.12-1
 - Package init
