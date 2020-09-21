@@ -41,7 +41,7 @@ Requires:       %{name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 %{summary}.
 
 %prep
-%autosetup
+%autosetup -p1
 # Do not pollute with docs
 sed -i -e "/dist_doc_DATA/d" Makefile.am
 
