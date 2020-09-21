@@ -1,0 +1,39 @@
+From 5482a621c75baad6dee31f5f6a1d38bf5849d4eb Mon Sep 17 00:00:00 2001
+From: si-gui <245140120@qq.com>
+Date: Mon, 21 Sep 2020 20:01:10 +0800
+Subject: [PATCH] Fix ragel-d,ragel-go,ragel-java such command segfault error
+
+Signed-off-by: si-gui <245140120@qq.com>
+---
+ src/inputdata.cc | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/src/inputdata.cc b/src/inputdata.cc
+index 8a6de8b..e6d4f73 100644
+--- a/src/inputdata.cc
++++ b/src/inputdata.cc
+@@ -1105,9 +1105,19 @@ void InputData::wait( const char *what, pid_t pid )
+ int InputData::rlhcMain( int argc, const char **argv )
+ {
+ 	pid_t pid = 0;
++	int code = 0;
++	try {
++		parseArgs( argc, argv );
++		checkArgs();
++
++		if ( !process() )
++			abortCompile( 1 );
++	}
++	catch ( const AbortCompile &ac ) {
++		code = ac.code;
++		return code;
++	}
+ 
+-	parseArgs( argc, argv );
+-	checkArgs();
+ 	makeDefaultFileName();
+ 	makeTranslateOutputFileName();
+ 
+-- 
+2.23.0
+
