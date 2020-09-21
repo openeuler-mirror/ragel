@@ -8,10 +8,10 @@ Signed-off-by: si-gui <245140120@qq.com>
  src/inputdata.cc | 14 ++++++++++++--
  1 file changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/src/inputdata.cc b/src/inputdata.cc
+diff --git a/ragel-7.0.0.12/src/inputdata.cc b/ragel-7.0.0.12/src/inputdata.cc
 index 8a6de8b..e6d4f73 100644
---- a/src/inputdata.cc
-+++ b/src/inputdata.cc
+--- a/ragel-7.0.0.12/src/inputdata.cc
++++ b/ragel-7.0.0.12/src/inputdata.cc
 @@ -1105,9 +1105,19 @@ void InputData::wait( const char *what, pid_t pid )
  int InputData::rlhcMain( int argc, const char **argv )
  {
