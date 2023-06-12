@@ -2,7 +2,7 @@
 
 Name:           ragel
 Version:        7.0.0.12
-Release:        2
+Release:        3
 Summary:        Finite state machine compiler
 
 # aapl/ is the LGPLv2+
@@ -25,6 +25,7 @@ BuildRequires:  colm-devel
 # Unfortunately, upstream doesn't exist and not possible to find version
 Provides:       bundled(aapl)
 Patch0000:      0001-Fix-ragel-d-ragel-go-ragel-java-such-command-segfault.patch
+Patch0001:      0002-Fix-error-no-viable-conversion-from-Variable-to-std-basic-string-char.patch
 
 %description
 Ragel compiles executable finite state machines from regular languages.
@@ -48,6 +49,7 @@ sed -i -e "/dist_doc_DATA/d" Makefile.am
 %build
 autoreconf -vfi
 %configure --disable-static
+export CFLAGS="$CFLAGS -Wno-error=mismatched-tags"
 %make_build
 
 %install
@@ -77,6 +79,10 @@ install -p -m 0644 -D %{name}.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax/%{
 %{_includedir}/%{name}/
 
 %changelog
+* Mon Jun 12 2023 Xiaoya Huang <huangxiaoya@iscas.ac.cn> - 7.0.0.12-3
+- Add a patch file for fixing the following building error: no viable conversion from 'Variable' to 'std::basic_string<char>'
+- Add warning options in the 'spec' file to suppress warnings
+
 * Mon Sep 21 2020 Guoshuai Sun <sunguoshuai@huawei.com> - 7.0.0.12-2
 - Fix ragel-d ragel-go ragel-java eg. command segfault
 

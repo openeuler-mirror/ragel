@@ -1,0 +1,965 @@
+diff -uNr a/src/actloop.cc b/src/actloop.cc
+--- a/src/actloop.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/actloop.cc	2023-06-12 16:41:21.738616900 +0800
+@@ -23,6 +23,7 @@
+ #include "actloop.h"
+ #include "redfsm.h"
+ #include "gendata.h"
++#include <sstream>
+ 
+ void ActLoop::FROM_STATE_ACTION( RedStateAp *state )
+ {
+@@ -142,12 +143,15 @@
+ void ActLoop::FROM_STATE_ACTIONS()
+ {
+ 	if ( redFsm->anyFromStateActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ),  ARR_REF( fromStateActions ) + "[" + vCS() + "]" ) << ";\n"
+-			"	" << nacts << " = " << CAST(UINT()) << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << ";\n"
++			"	" << nacts << " = " << CAST(UINT()) << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << ";\n"
+ 			"	" << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << " ) {\n";
+ 			FROM_STATE_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << nacts << " -= 1;\n"
+@@ -159,12 +163,15 @@
+ 
+ void ActLoop::REG_ACTIONS( std::string cond )
+ {
++    std::stringstream ssacts;
++    ssacts << acts;
++
+ 	out <<
+ 		"	" << acts << " = " << OFFSET( ARR_REF( actions ), ARR_REF( condActions ) + "[" + cond + "]" ) << ";\n"
+-		"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ),  "" + string(acts) + "" ) << ";\n"
++		"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ),  "" + string(ssacts.str()) + "" ) << ";\n"
+ 		"	" << acts << " += 1;\n"
+ 		"	while ( " << nacts << " > 0 ) {\n"
+-		"		switch ( " << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << " )\n"
++		"		switch ( " << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << " )\n"
+ 		"		{\n";
+ 		ACTION_SWITCH() <<
+ 		"		}\n"
+@@ -177,12 +184,15 @@
+ void ActLoop::TO_STATE_ACTIONS()
+ {
+ 	if ( redFsm->anyToStateActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ), ARR_REF( toStateActions ) + "[" + vCS() + "]" ) << ";\n"
+-			"	" << nacts << " = " << CAST(UINT()) << DEREF( ARR_REF( actions ), string(acts) ) << ";\n"
++			"	" << nacts << " = " << CAST(UINT()) << DEREF( ARR_REF( actions ), string(ssacts.str()) ) << ";\n"
+ 			"	" << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), string(acts) ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), string(ssacts.str()) ) << " ) {\n";
+ 			TO_STATE_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << nacts << " -= 1;\n"
+@@ -195,12 +205,15 @@
+ void ActLoop::EOF_ACTIONS()
+ {
+ 	if ( redFsm->anyEofActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ), ARR_REF( eofActions ) + "[" + vCS() + "]" ) << ";\n"
+-			"	" << nacts << " = " << CAST(UINT()) << DEREF( ARR_REF( actions ), string(acts) ) << ";\n"
++			"	" << nacts << " = " << CAST(UINT()) << DEREF( ARR_REF( actions ), string(ssacts.str()) ) << ";\n"
+ 			"	" << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), string(acts) ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), string(ssacts.str()) ) << " ) {\n";
+ 			EOF_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << nacts << " -= 1;\n"
+@@ -212,12 +225,15 @@
+ void ActLoop::NFA_FROM_STATE_ACTION_EXEC()
+ {
+ 	if ( redFsm->anyFromStateActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ), ARR_REF( fromStateActions ) + "[nfa_bp[nfa_len].state]" ) << ";\n"
+-			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), string(acts) ) << ";\n"
++			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), string(ssacts.str()) ) << ";\n"
+ 			"	" << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), string(acts) ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), string(ssacts.str()) ) << " ) {\n";
+ 			FROM_STATE_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << nacts << " -= 1;\n"
+diff -uNr a/src/binbreak.cc b/src/binbreak.cc
+--- a/src/binbreak.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/binbreak.cc	2023-06-12 16:41:53.283707900 +0800
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include "binbreak.h"
++#include <sstream>
+ 
+ void BinBreak::LOCATE_TRANS()
+ {
+@@ -84,18 +85,24 @@
+ 	if ( red->condSpaceList.length() > 0 ) {
+ 		std::stringstream success, error;
+ 
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 		out <<
+-			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(trans) + "]" ) << ";\n"
++			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(sstrans.str()) + "]" ) << ";\n"
+ 			"	" << klen << " = " << CAST( "int" ) << ARR_REF( transLengths ) << "[" << trans << "];\n"
+ 			"	" << cond << " = " << CAST( UINT() ) << ARR_REF( transOffsets ) << "[" << trans << "];\n"
+ 			"\n";
+ 
+ 		out <<
+ 			"	" << cpc << " = 0;\n";
+-		
++
+ 		if ( red->condSpaceList.length() > 0 )
+-			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(trans) + "]" );
+-		
++			std::stringstream sstrans;
++			sstrans << trans;
++
++			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(sstrans.str()) + "]" );
++
+ 		success <<
+ 			cond << " += " << CAST( UINT() ) << "(_mid - " << ckeys << ");\n";
+ 
+diff -uNr a/src/bingoto.cc b/src/bingoto.cc
+--- a/src/bingoto.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/bingoto.cc	2023-06-12 16:41:49.926674800 +0800
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include "bingoto.h"
++#include <sstream>
+ 
+ void BinGoto::LOCATE_TRANS()
+ {
+@@ -85,18 +86,24 @@
+ 	if ( red->condSpaceList.length() > 0 ) {
+ 		std::stringstream success, error;
+ 
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 		out <<
+-			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(trans) + "]" ) << ";\n"
++			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(sstrans.str()) + "]" ) << ";\n"
+ 			"	" << klen << " = " << CAST( "int" ) << ARR_REF( transLengths ) << "[" << trans << "];\n"
+ 			"	" << cond << " = " << CAST( UINT() ) << ARR_REF( transOffsets ) << "[" << trans << "];\n"
+ 			"\n";
+ 
+ 		out <<
+ 			"	" << cpc << " = 0;\n";
+-		
++
+ 		if ( red->condSpaceList.length() > 0 )
+-			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(trans) + "]" );
+-		
++			std::stringstream sstrans;
++			sstrans << trans;
++
++			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(sstrans.str()) + "]" );
++
+ 		success <<
+ 			cond << " += " << CAST( UINT() ) << "(_mid - " << ckeys << ");\n";
+ 
+diff -uNr a/src/binvar.cc b/src/binvar.cc
+--- a/src/binvar.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/binvar.cc	2023-06-12 16:41:46.025744100 +0800
+@@ -23,7 +23,7 @@
+ #include "binvar.h"
+ #include "parsedata.h"
+ #include "inputdata.h"
+-
++#include <sstream>
+ 
+ void BinVar::LOCATE_TRANS()
+ {
+@@ -91,18 +91,24 @@
+ 	if ( red->condSpaceList.length() > 0 ) {
+ 		std::stringstream success, error;
+ 
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 		out <<
+-			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(trans) + "]" ) << ";\n"
++			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + sstrans.str() + "]" ) << ";\n"
+ 			"	" << klen << " = " << CAST( "int" ) << ARR_REF( transLengths ) << "[" << trans << "];\n"
+ 			"	" << cond << " = " << CAST( UINT() ) << ARR_REF( transOffsets ) << "[" << trans << "];\n"
+ 			"\n";
+ 
+ 		out <<
+ 			"	" << cpc << " = 0;\n";
+-		
++
+ 		if ( red->condSpaceList.length() > 0 )
+-			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(trans) + "]" );
+-		
++			std::stringstream sstrans;
++			sstrans << trans;
++
++            COND_EXEC( ARR_REF( transCondSpaces ) + "[" + sstrans.str() + "]" );
++
+ 		success <<
+ 			cond << " += " << CAST( UINT() ) << "(_mid - " << ckeys << ");\n";
+ 
+diff -uNr a/src/flatbreak.cc b/src/flatbreak.cc
+--- a/src/flatbreak.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/flatbreak.cc	2023-06-12 16:40:51.876029800 +0800
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include "flatbreak.h"
++#include <sstream>
+ 
+ void FlatBreak::LOCATE_TRANS()
+ {
+@@ -56,14 +57,21 @@
+ 			out << " ) {\n";
+ 		}
+ 
++		std::stringstream sskeys;
++		sskeys << keys;
++		std::stringstream ssic;
++		ssic << ic;
++		std::stringstream ssinds;
++		ssinds << inds;
++
+ 		out <<
+ 			"       " << ic << " = " << CAST("int") << ARR_REF( charClass ) << "[" << CAST("int") << GET_KEY() <<
+ 							" - " << lowKey << "];\n"
+-			"		if ( " << ic << " <= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(keys) + "+1" ) << " && " <<
+-						"" << ic << " >= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(keys) + "" ) << " )\n"
++			"		if ( " << ic << " <= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "+1" ) << " && " <<
++						"" << ic << " >= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "" ) << " )\n"
+ 			"			" << trans << " = " << CAST(UINT()) << DEREF( ARR_REF( indicies ),
+-								string(inds) + " + " + CAST("int") + "( " + string(ic) + " - " + CAST("int") +
+-								DEREF( ARR_REF( transKeys ), string(keys) + "" ) + " ) " ) << "; \n"
++								string(ssinds.str()) + " + " + CAST("int") + "( " + string(ssic.str()) + " - " + CAST("int") +
++								DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "" ) + " ) " ) << "; \n"
+ 			"		else\n"
+ 			"			" << trans << " = " << CAST(UINT()) << ARR_REF( indexDefaults ) <<
+ 								"[" << vCS() << "]" << ";\n";
+@@ -106,12 +114,12 @@
+ 					out << " ) " << cpc << " += " << condValOffset << ";\n";
+ 				}
+ 
+-				out << 
++				out <<
+ 					"	" << CEND() << "\n}\n";
+ 			}
+ 		}
+ 
+-		out << 
++		out <<
+ 			"	}\n"
+ 			"	" << cond << " += " << CAST( UINT() ) << "" << cpc << ";\n";
+ 	}
+diff -uNr a/src/flatgoto.cc b/src/flatgoto.cc
+--- a/src/flatgoto.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/flatgoto.cc	2023-06-12 16:40:54.330371700 +0800
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include "flatgoto.h"
++#include <sstream>
+ 
+ void FlatGoto::LOCATE_TRANS()
+ {
+@@ -56,14 +57,21 @@
+ 			out << " ) {\n";
+ 		}
+ 
++		std::stringstream ssic;
++		ssic << ic;
++		std::stringstream sskeys;
++		sskeys << keys;
++		std::stringstream ssinds;
++		ssinds << inds;
++
+ 		out <<
+ 			"       " << ic << " = " << CAST("int") << ARR_REF( charClass ) << "[" << CAST("int") << GET_KEY() <<
+ 							" - " << lowKey << "];\n"
+-			"		if ( " << ic << " <= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(keys) + "+1" ) << " && " <<
+-						"" << ic << " >= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(keys) + "" ) << " )\n"
++			"		if ( " << ic << " <= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "+1" ) << " && " <<
++						"" << ic << " >= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "" ) << " )\n"
+ 			"			" << trans << " = " << CAST(UINT()) << DEREF( ARR_REF( indicies ),
+-								string(inds) + " + " + CAST("int") + "( " + string(ic) + " - " + CAST("int") +
+-								DEREF( ARR_REF( transKeys ), string(keys) + "" ) + " ) " ) << "; \n"
++								string(ssinds.str()) + " + " + CAST("int") + "( " + string(ssic.str()) + " - " + CAST("int") +
++								DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "" ) + " ) " ) << "; \n"
+ 			"		else\n"
+ 			"			" << trans << " = " << CAST(UINT()) << ARR_REF( indexDefaults ) <<
+ 								"[" << vCS() << "]" << ";\n";
+@@ -106,12 +114,12 @@
+ 					out << " ) " << cpc << " += " << condValOffset << ";\n";
+ 				}
+ 
+-				out << 
++				out <<
+ 					"	" << CEND() << "\n}\n";
+ 			}
+ 		}
+ 
+-		out << 
++		out <<
+ 			"	}\n"
+ 			"	" << cond << " += " << CAST( UINT() ) << "" << cpc << ";\n";
+ 	}
+diff -uNr a/src/flatvar.cc b/src/flatvar.cc
+--- a/src/flatvar.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/flatvar.cc	2023-06-12 16:40:59.127840100 +0800
+@@ -25,6 +25,8 @@
+ #include "parsedata.h"
+ #include "inputdata.h"
+ 
++#include <sstream>
++
+ void FlatVar::LOCATE_TRANS()
+ {
+ 	if ( redFsm->classMap == 0 ) {
+@@ -59,14 +61,21 @@
+ 			out << " ) {\n";
+ 		}
+ 
++		std::stringstream sskeys;
++		sskeys << keys;
++		std::stringstream ssic;
++		ssic << ic;
++		std::stringstream ssinds;
++		ssinds << inds;
++
+ 		out <<
+ 			"       " << ic << " = " << CAST("int") << ARR_REF( charClass ) << "[" << CAST("int") << GET_KEY() <<
+ 							" - " << lowKey << "];\n"
+-			"		if ( " << ic << " <= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(keys) + "+1" ) << " && " <<
+-						"" << ic << " >= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(keys) + "" ) << " )\n"
++			"		if ( " << ic << " <= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "+1" ) << " && " <<
++						"" << ic << " >= " << CAST("int") << DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "" ) << " )\n"
+ 			"			" << trans << " = " << CAST(UINT()) << DEREF( ARR_REF( indicies ),
+-								string(inds) + " + " + CAST("int") + "( " + string(ic) + " - " + CAST("int") +
+-								DEREF( ARR_REF( transKeys ), string(keys) + "" ) + " ) " ) << "; \n"
++								string(ssinds.str()) + " + " + CAST("int") + "( " + string(ssic.str()) + " - " + CAST("int") +
++								DEREF( ARR_REF( transKeys ), string(sskeys.str()) + "" ) + " ) " ) << "; \n"
+ 			"		else\n"
+ 			"			" << trans << " = " << CAST(UINT()) << ARR_REF( indexDefaults ) <<
+ 								"[" << vCS() << "]" << ";\n";
+@@ -107,12 +116,12 @@
+ 					out << " ) " << cpc << " += " << condValOffset << ";\n";
+ 				}
+ 
+-				out << 
++				out <<
+ 					"	" << CEND() << "\n}\n";
+ 			}
+ 		}
+ 
+-		out << 
++		out <<
+ 			"	}\n"
+ 			"	" << cond << " += " << CAST( UINT() ) << "" << cpc << ";\n";
+ 	}
+diff -uNr a/src/gotoloop.cc b/src/gotoloop.cc
+--- a/src/gotoloop.cc	2019-05-14 21:48:18.000000000 +0800
++++ b/src/gotoloop.cc	2023-06-12 16:41:12.940581000 +0800
+@@ -27,6 +27,7 @@
+ #include "gendata.h"
+ #include "parsedata.h"
+ #include "inputdata.h"
++#include "inputdata.h"
+ 
+ std::ostream &GotoLoop::ACTION_SWITCH()
+ {
+@@ -126,12 +127,15 @@
+ 	if ( redFsm->anyRegNbreak() )
+ 		out << nbreak << " = 0;\n";
+ 
++    std::stringstream ssacts;
++    ssacts << acts;
++
+ 	out <<
+-		"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << ";\n"
++		"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << ";\n"
+ 		"	" << acts << " += 1;\n"
+ 		"	while ( " << nacts << " > 0 ) {\n"
+-		"		switch ( " << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << " ) {\n";
+-		ACTION_SWITCH() << 
++		"		switch ( " << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << " ) {\n";
++		ACTION_SWITCH() <<
+ 		"		}\n"
+ 		"		" << acts << " += 1;\n"
+ 		"		" << nacts << " -= 1;\n"
+@@ -152,12 +156,15 @@
+ void GotoLoop::NFA_FROM_STATE_ACTION_EXEC()
+ {
+ 	if ( redFsm->anyFromStateActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ), ARR_REF( fromStateActions ) + "[nfa_bp[nfa_len].state]" ) << ";\n"
+-			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << ";\n"
++			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << ";\n"
+ 			"	" << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << " ) {\n";
+ 			FROM_STATE_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << nacts << " -= 1;\n"
+@@ -170,12 +177,15 @@
+ void GotoLoop::FROM_STATE_ACTIONS()
+ {
+ 	if ( redFsm->anyFromStateActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ),
+ 					ARR_REF( fromStateActions ) + "[" + vCS() + "]" ) << ";\n"
+-			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << "; " << acts << " += 1;\n"
++			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << "; " << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << " ) {\n";
+ 			FROM_STATE_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << acts << " += 1;\n"
+@@ -188,12 +198,15 @@
+ void GotoLoop::TO_STATE_ACTIONS()
+ {
+ 	if ( redFsm->anyToStateActions() ) {
++		std::stringstream ssacts;
++		ssacts << acts;
++
+ 		out <<
+ 			"	" << acts << " = " << OFFSET( ARR_REF( actions ),
+ 					ARR_REF( toStateActions ) + "[" + vCS() + "]" ) << ";\n"
+-			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << "; " << acts << " += 1;\n"
++			"	" << nacts << " = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << "; " << acts << " += 1;\n"
+ 			"	while ( " << nacts << " > 0 ) {\n"
+-			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(acts) + "" ) << " ) {\n";
++			"		switch ( " << DEREF( ARR_REF( actions ), "" + string(ssacts.str()) + "" ) << " ) {\n";
+ 			TO_STATE_ACTION_SWITCH() <<
+ 			"		}\n"
+ 			"		" << acts << " += 1;\n"
+@@ -213,7 +226,7 @@
+ 		out <<
+ 			"	" << INDEX( ARR_TYPE( actions ), "__acts" ) << ";\n"
+ 			"	" << UINT() << " __nacts;\n"
+-			"	__acts = " << OFFSET( ARR_REF( actions ), 
++			"	__acts = " << OFFSET( ARR_REF( actions ),
+ 					ARR_REF( eofActions ) + "[" + vCS() + "]" ) << ";\n"
+ 			"	__nacts = " << CAST( UINT() ) << DEREF( ARR_REF( actions ), "__acts" ) << "; __acts += 1;\n"
+ 			"	while ( __nacts > 0 ) {\n"
+diff -uNr a/src/switchbreak.cc b/src/switchbreak.cc
+--- a/src/switchbreak.cc	2019-05-14 21:48:19.000000000 +0800
++++ b/src/switchbreak.cc	2023-06-12 16:41:59.343074800 +0800
+@@ -21,24 +21,31 @@
+  */
+ 
+ #include "switchbreak.h"
++#include <sstream>
+ 
+ void SwitchBreak::LOCATE_COND()
+ {
+ 	if ( red->condSpaceList.length() > 0 ) {
+ 		std::stringstream success, error;
+ 
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 		out <<
+-			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(trans) + "]" ) << ";\n"
++			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(sstrans.str()) + "]" ) << ";\n"
+ 			"	" << klen << " = " << CAST( "int" ) << ARR_REF( transLengths ) << "[" << trans << "];\n"
+ 			"	" << cond << " = " << CAST( UINT() ) << ARR_REF( transOffsets ) << "[" << trans << "];\n"
+ 			"\n";
+ 
+ 		out <<
+ 			"	" << cpc << " = 0;\n";
+-		
++
+ 		if ( red->condSpaceList.length() > 0 )
+-			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(trans) + "]" );
+-		
++			std::stringstream sstrans;
++			sstrans << trans;
++
++			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(sstrans.str()) + "]" );
++
+ 		success <<
+ 			cond << " += " << CAST( UINT() ) << "(_mid - " << ckeys << ");\n";
+ 
+diff -uNr a/src/switchgoto.cc b/src/switchgoto.cc
+--- a/src/switchgoto.cc	2019-05-14 21:48:19.000000000 +0800
++++ b/src/switchgoto.cc	2023-06-12 16:42:01.055431800 +0800
+@@ -27,18 +27,24 @@
+ 	if ( red->condSpaceList.length() > 0 ) {
+ 		std::stringstream success, error;
+ 
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 		out <<
+-			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(trans) + "]" ) << ";\n"
++			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(sstrans.str()) + "]" ) << ";\n"
+ 			"	" << klen << " = " << CAST( "int" ) << ARR_REF( transLengths ) << "[" << trans << "];\n"
+ 			"	" << cond << " = " << CAST( UINT() ) << ARR_REF( transOffsets ) << "[" << trans << "];\n"
+ 			"\n";
+ 
+ 		out <<
+ 			"	" << cpc << " = 0;\n";
+-		
++
+ 		if ( red->condSpaceList.length() > 0 )
+-			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(trans) + "]" );
+-		
++			std::stringstream sstrans;
++			sstrans << trans;
++
++            COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(sstrans.str()) + "]" );
++
+ 		success <<
+ 			cond << " += " << CAST( UINT() ) << "(_mid - " << ckeys << ");\n";
+ 
+diff -uNr a/src/switchvar.cc b/src/switchvar.cc
+--- a/src/switchvar.cc	2019-05-14 21:48:19.000000000 +0800
++++ b/src/switchvar.cc	2023-06-12 16:42:03.242548900 +0800
+@@ -29,18 +29,24 @@
+ 	if ( red->condSpaceList.length() > 0 ) {
+ 		std::stringstream success, error;
+ 
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 		out <<
+-			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(trans) + "]" ) << ";\n"
++			"	" << ckeys << " = " << OFFSET( ARR_REF( condKeys ), ARR_REF( transOffsets ) + "[" + string(sstrans.str()) + "]" ) << ";\n"
+ 			"	" << klen << " = " << CAST( "int" ) << ARR_REF( transLengths ) << "[" << trans << "];\n"
+ 			"	" << cond << " = " << CAST( UINT() ) << ARR_REF( transOffsets ) << "[" << trans << "];\n"
+ 			"\n";
+ 
+ 		out <<
+ 			"	" << cpc << " = 0;\n";
+-		
++
+ 		if ( red->condSpaceList.length() > 0 )
+-			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(trans) + "]" );
+-		
++			std::stringstream sstrans;
++			sstrans << trans;
++
++			COND_EXEC( ARR_REF( transCondSpaces ) + "[" + string(sstrans.str()) + "]" );
++
+ 		success <<
+ 			cond << " += " << CAST( UINT() ) << "(_mid - " << ckeys << ");\n";
+ 
+diff -uNr a/src/tabbreak.cc b/src/tabbreak.cc
+--- a/src/tabbreak.cc	2019-05-14 21:48:40.000000000 +0800
++++ b/src/tabbreak.cc	2023-06-12 16:40:43.036901500 +0800
+@@ -23,6 +23,7 @@
+ #include "tables.h"
+ #include "binary.h"
+ #include "flat.h"
++#include <sstream>
+ 
+ std::string TabBreak::BREAK( GotoLabel &label )
+ {
+@@ -86,7 +87,7 @@
+ 	}
+ 
+ 	ret << STACK() << "[" << TOP() << "] = " <<
+-			vCS() << "; " << TOP() << " += 1;" << vCS() << " = " << 
++			vCS() << "; " << TOP() << " += 1;" << vCS() << " = " <<
+ 			callDest << ";";
+ 
+ 	CONTROL_JUMP( ret, inFinish );
+@@ -104,7 +105,7 @@
+ 	}
+ 
+ 	ret << STACK() << "[" << TOP() << "] = " << vCS() << "; " <<
+-			TOP() << " += 1;" << vCS() << " = " << 
++			TOP() << " += 1;" << vCS() << " = " <<
+ 			callDest << "; " << CLOSE_GEN_BLOCK();
+ }
+ 
+@@ -211,23 +212,23 @@
+ 	DECLARE( INT(), new_recs );
+ 	DECLARE( INT(), alt );
+ 	DECLARE( INT(), ic );
+-	
++
+ 	out << BREAK_LABEL( _resume );
+ 
+ 	/* Do we break out on no more input. */
+ 	bool eof = redFsm->anyEofActivity() || redFsm->anyNfaStates();
+ 	if ( !noEnd ) {
+ 		if ( eof ) {
+-			out << 
++			out <<
+ 				"       while ( " << P() << " != " << PE() << " || " << P() << " == " << vEOF() << " ) {\n";
+ 		}
+ 		else {
+-			out << 
++			out <<
+ 				"       while ( " << P() << " != " << PE() << " ) {\n";
+ 		}
+ 	}
+ 	else {
+-			out << 
++			out <<
+ 				"       while ( " << TRUE() << " ) {\n";
+ 
+ 	}
+@@ -242,7 +243,7 @@
+ 	FROM_STATE_ACTIONS();
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"if ( " << P() << " == " << vEOF() << " ) {\n";
+ 
+ 		if ( redFsm->anyEofTrans() || redFsm->anyEofActions() ) {
+@@ -255,7 +256,7 @@
+ 			}
+ 		}
+ 
+-		out << 
++		out <<
+ 			"}\n"
+ 			"else {\n";
+ 	}
+@@ -263,7 +264,7 @@
+ 	LOCATE_TRANS();
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"}\n";
+ 	}
+ 
+@@ -272,8 +273,13 @@
+ 	if ( redFsm->anyRegCurStateRef() )
+ 		out << "	" << ps << " = " << vCS() << ";\n";
+ 
++		std::stringstream sscond;
++		sscond << cond;
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 	string condVar =
+-			red->condSpaceList.length() != 0 ? string(cond) : string(trans);
++			red->condSpaceList.length() != 0 ? string(sscond.str()) : string(sstrans.str());
+ 
+ 	out <<
+ 		"	" << vCS() << " = " << CAST(INT()) << ARR_REF( condTargs ) << "[" << condVar << "];\n\n";
+@@ -305,7 +311,7 @@
+ 	out << "\n" << EMIT_LABEL( _again );
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"	if ( " << P() << " == " << vEOF() << " ) {\n"
+ 			"		if ( " << vCS() << " >= " << FIRST_FINAL_STATE() << " )\n"
+ 			"			" << BREAK( _resume ) << ";\n"
+@@ -316,16 +322,16 @@
+ 	TO_STATE_ACTIONS();
+ 
+ 	if ( redFsm->errState != 0 ) {
+-		out << 
++		out <<
+ 			"	if ( " << vCS() << " != " << redFsm->errState->id << " ) {\n";
+ 	}
+ 
+-	out << 
++	out <<
+ 		"	" << P() << " += 1;\n"
+ 		"	" << CONTINUE( _resume ) << ";\n";
+ 
+ 	if ( redFsm->errState != 0 ) {
+-		out << 
++		out <<
+ 			"	}\n";
+ 	}
+ 
+@@ -364,11 +370,11 @@
+ 		NFA_POST_POP();
+ 	}
+ 	else {
+-		out << 
++		out <<
+ 			"	" << BREAK( _resume ) << ";\n";
+ 	}
+ 
+-	out << 
++	out <<
+ 		"}\n";
+ 
+ 	out << EMIT_LABEL( _out );
+diff -uNr a/src/tabgoto.cc b/src/tabgoto.cc
+--- a/src/tabgoto.cc	2019-05-14 21:48:40.000000000 +0800
++++ b/src/tabgoto.cc	2023-06-12 16:40:38.712665400 +0800
+@@ -23,6 +23,7 @@
+ #include "tables.h"
+ #include "binary.h"
+ #include "flat.h"
++#include <sstream>
+ 
+ void TabGoto::CONTROL_JUMP( ostream &ret, bool inFinish )
+ {
+@@ -57,7 +58,7 @@
+ 	}
+ 
+ 	ret << STACK() << "[" << TOP() << "] = " <<
+-			vCS() << "; " << TOP() << " += 1;" << vCS() << " = " << 
++			vCS() << "; " << TOP() << " += 1;" << vCS() << " = " <<
+ 			callDest << ";";
+ 
+ 	CONTROL_JUMP( ret, inFinish );
+@@ -75,7 +76,7 @@
+ 	}
+ 
+ 	ret << STACK() << "[" << TOP() << "] = " << vCS() << "; " <<
+-			TOP() << " += 1;" << vCS() << " = " << 
++			TOP() << " += 1;" << vCS() << " = " <<
+ 			callDest << "; " << CLOSE_GEN_BLOCK();
+ }
+ 
+@@ -181,19 +182,19 @@
+ 	DECLARE( INT(), new_recs );
+ 	DECLARE( INT(), alt );
+ 	DECLARE( INT(), ic );
+-	
++
+ 	out << EMIT_LABEL( _resume );
+ 
+ 	/* Do we break out on no more input. */
+ 	bool eof = redFsm->anyEofActivity() || redFsm->anyNfaStates();
+ 	if ( !noEnd ) {
+ 		if ( eof ) {
+-			out << 
++			out <<
+ 				"       if ( " << P() << " == " << PE() << " && " << P() << " != " << vEOF() << " )\n"
+ 				"			goto " << _out << ";\n";
+ 		}
+ 		else {
+-			out << 
++			out <<
+ 				"       if ( " << P() << " == " << PE() << " )\n"
+ 				"			goto " << _out << ";\n";
+ 		}
+@@ -204,20 +205,20 @@
+ 	FROM_STATE_ACTIONS();
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"if ( " << P() << " == " << vEOF() << " ) {\n";
+ 
+ 		if ( redFsm->anyEofTrans() || redFsm->anyEofActions() ) {
+ 			if ( redFsm->anyEofTrans() ) {
+ 				out <<
+ 					"	if ( " << ARR_REF( eofTrans ) << "[" << vCS() << "] > 0 ) {\n"
+-					"		" << trans << " = " << 
++					"		" << trans << " = " <<
+ 								CAST(UINT()) << ARR_REF( eofTrans ) << "[" << vCS() << "] - 1;\n"
+ 					"	}\n";
+ 			}
+ 		}
+ 
+-		out << 
++		out <<
+ 			"}\n"
+ 			"else {\n";
+ 	}
+@@ -225,7 +226,7 @@
+ 	LOCATE_TRANS();
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"}\n";
+ 	}
+ 
+@@ -234,8 +235,13 @@
+ 	if ( redFsm->anyRegCurStateRef() )
+ 		out << "	" << ps << " = " << vCS() << ";\n";
+ 
++		std::stringstream sscond;
++		sscond << cond;
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 	string condVar =
+-			red->condSpaceList.length() != 0 ? string(cond) : string(trans);
++			red->condSpaceList.length() != 0 ? string(sscond.str()) : string(sstrans.str());
+ 
+ 	out <<
+ 		"	" << vCS() << " = " << CAST(INT()) << ARR_REF( condTargs ) << "[" << condVar << "];\n\n";
+@@ -262,7 +268,7 @@
+ 	out << "\n" << EMIT_LABEL( _again );
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"	if ( " << P() << " == " << vEOF() << " ) {\n"
+ 			"		if ( " << vCS() << " >= " << FIRST_FINAL_STATE() << " )\n"
+ 			"			goto " << _out << ";\n"
+@@ -273,16 +279,16 @@
+ 	TO_STATE_ACTIONS();
+ 
+ 	if ( redFsm->errState != 0 ) {
+-		out << 
++		out <<
+ 			"	if ( " << vCS() << " != " << redFsm->errState->id << " ) {\n";
+ 	}
+ 
+-	out << 
++	out <<
+ 		"	" << P() << " += 1;\n"
+ 		"	goto " << _resume << ";\n";
+ 
+ 	if ( redFsm->errState != 0 ) {
+-		out << 
++		out <<
+ 			"	}\n";
+ 	}
+ 
+diff -uNr a/src/tabvar.cc b/src/tabvar.cc
+--- a/src/tabvar.cc	2019-05-14 21:48:40.000000000 +0800
++++ b/src/tabvar.cc	2023-06-12 16:40:45.327614400 +0800
+@@ -23,6 +23,7 @@
+ #include "tables.h"
+ #include "flatvar.h"
+ #include "binvar.h"
++#include <sstream>
+ 
+ std::string TabVar::BREAK( GotoLabel &label )
+ {
+@@ -157,23 +158,23 @@
+ 	out << UINT() << " _cont = 1;\n";
+ 	out << UINT() << " _again = 1;\n";
+ 	out << UINT() << " _bsc = 1;\n";
+-	
++
+ 	out << BREAK_LABEL( _resume );
+ 
+ 	/* Do we break out on no more input. */
+ 	bool eof = redFsm->anyEofActivity() || redFsm->anyNfaStates();
+ 	if ( !noEnd ) {
+ 		if ( eof ) {
+-			out << 
++			out <<
+ 				"       while ( _again == 1 && ( " << P() << " != " << PE() << " || " << P() << " == " << vEOF() << " ) ) {\n";
+ 		}
+ 		else {
+-			out << 
++			out <<
+ 				"       while ( _again == 1 && " << P() << " != " << PE() << " ) {\n";
+ 		}
+ 	}
+ 	else {
+-			out << 
++			out <<
+ 				"       while ( _again == 1 ) {\n";
+ 
+ 	}
+@@ -186,7 +187,7 @@
+ 	FROM_STATE_ACTIONS();
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"if ( " << P() << " == " << vEOF() << " ) {\n";
+ 
+ 		if ( redFsm->anyEofTrans() || redFsm->anyEofActions() ) {
+@@ -199,7 +200,7 @@
+ 			}
+ 		}
+ 
+-		out << 
++		out <<
+ 			"}\n"
+ 			"else {\n";
+ 	}
+@@ -207,7 +208,7 @@
+ 	LOCATE_TRANS();
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"}\n";
+ 	}
+ 
+@@ -216,8 +217,13 @@
+ 	if ( redFsm->anyRegCurStateRef() )
+ 		out << "	" << ps << " = " << vCS() << ";\n";
+ 
++		std::stringstream sscond;
++		sscond << cond;
++		std::stringstream sstrans;
++		sstrans << trans;
++
+ 	string condVar =
+-			red->condSpaceList.length() != 0 ? string(cond) : string(trans);
++			red->condSpaceList.length() != 0 ? string(sscond.str()) : string(sstrans.str());
+ 
+ 	out <<
+ 		"	" << vCS() << " = " << CAST(INT()) << ARR_REF( condTargs ) << "[" << condVar << "];\n\n";
+@@ -246,7 +252,7 @@
+ 	out << "\n" << EMIT_LABEL( _again );
+ 
+ 	if ( !noEnd && eof ) {
+-		out << 
++		out <<
+ 			"	if ( " << P() << " == " << vEOF() << " ) {\n"
+ 			"		if ( " << vCS() << " >= " << FIRST_FINAL_STATE() << " )\n"
+ 			"			" << BREAK( _resume ) << "\n"
+@@ -257,16 +263,16 @@
+ 	TO_STATE_ACTIONS();
+ 
+ 	if ( redFsm->errState != 0 ) {
+-		out << 
++		out <<
+ 			"	if ( " << vCS() << " != " << redFsm->errState->id << " ) {\n";
+ 	}
+ 
+-	out << 
++	out <<
+ 		"	" << P() << " += 1;\n"
+ 		"	" << CONTINUE( _resume ) << "\n";
+ 
+ 	if ( redFsm->errState != 0 ) {
+-		out << 
++		out <<
+ 			"	}\n";
+ 	}
+ 
+@@ -314,7 +320,7 @@
+ 		out << "}\n";
+ 	}
+ 	else {
+-		out << 
++		out <<
+ 			"	" << BREAK( _resume ) << "\n";
+ 	}
+ 
